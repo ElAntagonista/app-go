@@ -5,11 +5,17 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 # Keep in sync with .github/workflows so local results match CI.
 GOLANGCI_LINT_VERSION := v2.14.0
 SEMGREP_VERSION       := 1.181.0
+GORELEASER_VERSION    := v2.18.3
 
-.PHONY: build run test lint fmt sast check clean
+.PHONY: build snapshot run test lint fmt sast check clean
 
 build: ## Build a static binary into dist/
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o dist/$(BINARY) ./cmd/app
+
+snapshot: ## Build all release targets with GoReleaser, without publishing
+	docker run --rm -v "$(CURDIR)":/src -w /src --entrypoint sh \
+		goreleaser/goreleaser:$(GORELEASER_VERSION) \
+		-c 'git config --global --add safe.directory /src && goreleaser release --snapshot --clean'
 
 run: ## Run the server locally on :8080
 	go run ./cmd/app

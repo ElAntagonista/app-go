@@ -64,6 +64,28 @@ request.
   curated `.golangci.yml`: correctness, security and resource-leak linters
   rather than style rules. `setup-go` reads the toolchain from `go.mod`, so CI
   lints with the pinned compiler.
+- **Test & build** runs only after both gates pass (`needs: [sast, lint]`):
+  `make test` (race detector, shuffled order), then
+  `goreleaser release --snapshot`, the full release pipeline minus publishing.
+  Binaries and `checksums.txt` are kept as a 7-day artifact; `make snapshot`
+  runs the same build locally.
+
+  **Why GoReleaser** rather than a hand-written `GOOS`/`GOARCH` build matrix:
+  - *One definition of the release.* Targets, build flags, version stamping,
+    asset names and checksums live in `.goreleaser.yaml`, which is versioned
+    and reviewed like code, instead of being spread across workflow shell
+    steps.
+  - *The release is rehearsed on every commit.* CI runs the same config in
+    snapshot mode, so a cross-compile break or a config mistake shows up on
+    the commit that causes it, not when a tag is pushed.
+  - *A smaller release workflow.* Publishing becomes a single step, so the
+    tag-triggered workflow has less code to get wrong.
+  - *Room to grow.* SBOMs, cosign signing and changelogs are built-in options
+    rather than extra scripting.
+  - *Ecosystem standard.* It is the de facto tool for Go release automation,
+    and the OSS edition (MIT) covers everything used here.
+  - *Trade-off:* one more pinned tool, and the cross-compile mechanics sit
+    behind its config instead of in plain workflow YAML.
 - **Least privilege.** The workflow token is read-only (`contents: read`).
 - **Concurrency.** A new push to a pull request cancels its in-flight run.
   Runs on `main` always finish, so every commit on `main` gets a result.
