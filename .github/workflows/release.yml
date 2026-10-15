@@ -42,6 +42,11 @@ jobs:
         with:
           go-version-file: go.mod
           cache-dependency-path: go.mod
+      # syft generates the SBOMs; same version as bundled in the goreleaser
+      # image used by `make snapshot`.
+      - uses: anchore/sbom-action/download-syft@v0.24.3
+        with:
+          syft-version: v1.52.0
       - uses: goreleaser/goreleaser-action@v7
         with:
           version: v2.18.3

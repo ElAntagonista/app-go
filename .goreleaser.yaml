@@ -20,3 +20,10 @@ archives:
 
 checksum:
   name_template: checksums.txt
+
+# One SPDX SBOM per binary, catalogued by syft from the Go build info embedded
+# in the binary. Named after the binary asset so the pair is obvious.
+sboms:
+  - artifacts: binary
+    documents:
+      - "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"

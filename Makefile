@@ -5,6 +5,7 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 # Keep in sync with .github/workflows so local results match CI.
 GOLANGCI_LINT_VERSION := v2.14.0
 SEMGREP_VERSION       := 1.181.0
+# The goreleaser image bundles syft v1.52.0 (SBOMs); CI pins the same version.
 GORELEASER_VERSION    := v2.18.3
 
 .PHONY: build snapshot run test lint fmt sast check clean

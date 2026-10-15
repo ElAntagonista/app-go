@@ -67,7 +67,7 @@ request.
 - **Test & build** runs only after both gates pass (`needs: [sast, lint]`):
   `make test` (race detector, shuffled order), then
   `goreleaser release --snapshot`, the full release pipeline minus publishing.
-  Binaries and `checksums.txt` are kept as a 7-day artifact; `make snapshot`
+  Binaries, SBOMs and `checksums.txt` are kept as a 7-day artifact; `make snapshot`
   runs the same build locally.
 
   **Why GoReleaser** rather than a hand-written `GOOS`/`GOARCH` build matrix:
@@ -115,6 +115,11 @@ request.
 - **macOS** (amd64 + arm64) is included to show cross-compilation. The
   binaries are not Apple-notarized, so a browser download needs
   `xattr -d com.apple.quarantine`.
+- **SBOM per binary.** GoReleaser runs syft on each binary and attaches
+  `app_v<version>_<os>_<arch>.sbom.json` (SPDX 2.3 JSON) to the release; the
+  SBOMs are also listed in `checksums.txt`. SPDX is GoReleaser's default, an
+  ISO standard, and what GitHub's dependency graph uses. CI produces the same
+  SBOMs on every commit.
 - **Releases are never cancelled.** A second tag queues behind a running
   release instead of interrupting it mid-publish.
 
