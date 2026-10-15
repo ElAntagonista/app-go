@@ -51,3 +51,15 @@ fixed here deliberately:
 - **Bounded server timeouts** (read header, read, write, idle) so slow clients
   cannot hold connections open indefinitely (slowloris).
 - **JSON logs on stdout**, ready for any log collector (12-factor).
+
+### CI pipeline
+
+`.github/workflows/ci.yml` runs on every push to `main` and on every pull
+request.
+
+- **SAST: semgrep** with the `p/golang` registry ruleset, in the official
+  container, pinned to 1.181.0 (the same version as `make sast`). No Semgrep
+  account or token needed. Findings fail the build (`--error`).
+- **Least privilege.** The workflow token is read-only (`contents: read`).
+- **Concurrency.** A new push to a pull request cancels its in-flight run.
+  Runs on `main` always finish, so every commit on `main` gets a result.

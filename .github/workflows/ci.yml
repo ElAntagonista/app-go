@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# One run per branch/PR; superseded PR runs are cancelled, main runs finish.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  sast:
+    name: SAST (semgrep)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    container: semgrep/semgrep:1.181.0
+    steps:
+      - uses: actions/checkout@v7
+      - run: semgrep scan --config p/golang --error --metrics=off
