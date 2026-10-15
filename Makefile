@@ -13,7 +13,7 @@ build: ## Build a static binary into dist/
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o dist/$(BINARY) ./cmd/app
 
 snapshot: ## Build all release targets with GoReleaser, without publishing
-	docker run --rm -v "$(CURDIR)":/src -w /src --entrypoint sh \
+	docker run --rm -v "$(CURDIR)":/src -w /src -e GOTOOLCHAIN=auto --entrypoint sh \
 		goreleaser/goreleaser:$(GORELEASER_VERSION) \
 		-c 'git config --global --add safe.directory /src && goreleaser release --snapshot --clean'
 
