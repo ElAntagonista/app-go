@@ -89,3 +89,44 @@ request.
 - **Least privilege.** The workflow token is read-only (`contents: read`).
 - **Concurrency.** A new push to a pull request cancels its in-flight run.
   Runs on `main` always finish, so every commit on `main` gets a result.
+
+### Release
+
+`.github/workflows/release.yml` runs when a semver tag is pushed:
+
+1. **Test** with a read-only token. The release re-runs the tests instead of
+   trusting an earlier CI run.
+2. **Build & publish** (`contents: write`): `goreleaser release` builds all
+   four targets and publishes the GitHub Release with the binaries,
+   `checksums.txt` and generated release notes. The write token is never
+   exposed to test code, and `persist-credentials: false` keeps it out of
+   `.git/config`.
+
+- **Strict tag filter** `v[0-9]+.[0-9]+.[0-9]+`. Only semver tags publish; a
+  stray tag such as `test` or `v1` cannot.
+- **Asset names are a contract with app-deploy:**
+  `app_v<version>_<os>_<arch>` plus `checksums.txt` (SHA-256). Changing them
+  breaks the deployment repo.
+- **Static, reproducible binaries.** `CGO_ENABLED=0` lets the Linux builds run
+  on a distroless/static base image; `-trimpath` and commit-timestamp file
+  times make rebuilds byte-identical.
+- **Version stamping.** The tag is injected via `-X main.version` and logged
+  at startup, so a running pod can be traced back to its release.
+- **macOS** (amd64 + arm64) is included to show cross-compilation. The
+  binaries are not Apple-notarized, so a browser download needs
+  `xattr -d com.apple.quarantine`.
+- **Releases are never cancelled.** A second tag queues behind a running
+  release instead of interrupting it mid-publish.
+
+#### Cutting a release
+
+```sh
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+```
+
+Release tags are **annotated**, so they record the tagger, the date and a
+message. **Signed tags (`git tag -s`) would be best practice for supply-chain
+trust:** an annotated tag's tagger is self-declared and can be forged by
+anyone with push access, while a signature proves who cut the release and
+shows as "Verified" on GitHub.
