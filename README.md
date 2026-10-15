@@ -130,3 +130,39 @@ message. **Signed tags (`git tag -s`) would be best practice for supply-chain
 trust:** an annotated tag's tagger is self-declared and can be forged by
 anyone with push access, while a signature proves who cut the release and
 shows as "Verified" on GitHub.
+
+### Cross-repo dispatch
+
+After each successful release, `.github/workflows/dispatch.yml` tells
+[app-deploy](https://github.com/ElAntagonista/app-deploy) to package it:
+
+```
+tag v1.2.3 → Release workflow → workflow_run → Dispatch release
+           → repository_dispatch (new-release, {"version": "v1.2.3"}) → app-deploy
+```
+
+- **A separate workflow, triggered by `workflow_run`** on the Release workflow
+  completing successfully. The cross-repo token is only available to this
+  small job (no checkout, no third-party actions, `permissions: {}`), never to
+  the job that builds and publishes the release. The dispatch can also be
+  re-run on its own.
+- **Not `on: release: published`.** It looks like the obvious trigger but
+  never fires here: GitHub does not start workflows from events caused by
+  `GITHUB_TOKEN`, and GoReleaser publishes with it. Making it fire would mean
+  publishing with a stronger personal token inside the release job.
+- **Other options rejected:** a dispatch step at the end of `release.yml`
+  (exposes the token to the release job and can't be re-run alone); calling
+  app-deploy's workflow as a reusable workflow (it would execute in app-go,
+  defeating the two-repo setup); app-deploy polling for new releases (latency,
+  and not an explicit hand-off).
+- **`repository_dispatch` rather than `workflow_dispatch`.** app-go announces
+  an event; it does not need to know which workflow file in app-deploy
+  handles it.
+- **The version is validated on both sides** against strict semver, so a
+  malformed payload is rejected before anything runs.
+- **Credential: `DEPLOY_REPO_PAT`**, a fine-grained token scoped to
+  app-deploy only, with *Contents: Read and write* (the minimum the dispatch
+  API accepts) and a 30-day expiry. The default `GITHUB_TOKEN` cannot reach
+  another repository. In production this would be a GitHub App installation
+  token minted per run (`actions/create-github-app-token`): short-lived, not
+  tied to a person, no manual rotation.

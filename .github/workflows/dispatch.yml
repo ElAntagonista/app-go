@@ -1,0 +1,36 @@
+name: Dispatch release
+
+# Runs after the Release workflow, so the cross-repo token never shares a job
+# with the release build. `release: published` would not fire here: releases
+# created with GITHUB_TOKEN do not trigger other workflows.
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    name: Notify app-deploy
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Send new-release event
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_REPO_PAT }}
+          VERSION: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::error::DEPLOY_REPO_PAT secret is not set"
+            exit 1
+          fi
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::unexpected release ref '$VERSION'"
+            exit 1
+          fi
+          gh api repos/ElAntagonista/app-deploy/dispatches \
+            -f event_type=new-release \
+            -f "client_payload[version]=$VERSION"
+          echo "Sent \`new-release\` for $VERSION to app-deploy." >> "$GITHUB_STEP_SUMMARY"
