@@ -65,6 +65,5 @@ jobs:
           name: binaries
           path: |
             dist/*/app
-            dist/*.sbom.json
             dist/checksums.txt
           retention-days: 7
