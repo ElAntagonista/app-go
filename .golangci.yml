@@ -1,0 +1,42 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    # correctness
+    - errorlint
+    - nilerr
+    - copyloopvar
+    - durationcheck
+    # security & resource leaks
+    - gosec
+    - bidichk
+    - bodyclose
+    - noctx
+    - containedctx
+    # style
+    - gocritic
+    - revive
+    - misspell
+    - godot
+    - nolintlint
+    # logging, tests, modernization
+    - sloglint
+    - thelper
+    - paralleltest
+    - usetesting
+    - modernize
+    - usestdlibvars
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
