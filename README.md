@@ -60,6 +60,10 @@ request.
 - **SAST: semgrep** with the `p/golang` registry ruleset, in the official
   container, pinned to 1.181.0 (the same version as `make sast`). No Semgrep
   account or token needed. Findings fail the build (`--error`).
+- **Lint: golangci-lint** v2.14.0 (the same version as `make lint`) with the
+  curated `.golangci.yml`: correctness, security and resource-leak linters
+  rather than style rules. `setup-go` reads the toolchain from `go.mod`, so CI
+  lints with the pinned compiler.
 - **Least privilege.** The workflow token is read-only (`contents: read`).
 - **Concurrency.** A new push to a pull request cancels its in-flight run.
   Runs on `main` always finish, so every commit on `main` gets a result.

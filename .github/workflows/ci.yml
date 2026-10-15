@@ -22,3 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: semgrep scan --config p/golang --error --metrics=off
+
+  lint:
+    name: Lint (golangci-lint)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.mod  # stdlib only, so there is no go.sum
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.14.0
