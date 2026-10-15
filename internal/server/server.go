@@ -90,7 +90,7 @@ func (s *Server) Serve(ctx context.Context, ln net.Listener) error {
 	case <-ctx.Done():
 	}
 
-	s.logger.Info("shutting down", "timeout", shutdownTimeout)
+	s.logger.Info("shutting down", "timeout", shutdownTimeout.String())
 
 	// ctx is already cancelled; shutdown needs its own deadline.
 	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), shutdownTimeout)
