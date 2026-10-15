@@ -1,6 +1,6 @@
 # app-go
 
-A minimal Go HTTP service that responds with `Hello from Mondoo Engineer!`.
+A minimal Go HTTP service that responds.
 
 This repository builds, tests and releases the binary. Containerization and
 deployment live in a separate repository,
@@ -14,7 +14,7 @@ curl localhost:8080                      # Hello from Mondoo Engineer!
 curl localhost:8080/healthz              # ok
 ```
 
-## Decisions
+## Decisions log
 
 ### Project structure
 
@@ -36,10 +36,6 @@ internal/server/   HTTP handler, server timeouts, graceful shutdown
   dependency scanners to flag and nothing to keep patched.
 - **Tests kept proportionate.** One unit test for the routes and one functional
   test that runs the server over real TCP and checks graceful shutdown.
-
-Rejected alternatives: a flat single `main` package (mixes lifecycle and
-handler code, binary named after the module), and a layered/hexagonal layout
-(ceremony with no payoff for one endpoint).
 
 ### Runtime contract
 
